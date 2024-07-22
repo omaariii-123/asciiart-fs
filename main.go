@@ -5,13 +5,36 @@ import (
 		"os"
 		"io/ioutil"
 		"strings"
+		"unicode"
 	)
 
 type data struct {
 	content	map[rune][]string
 }
 
-func PrintAscii(str string, amap data, f string) {
+
+func CheckUnprintableChars(s string) {
+	for _, c := range s {
+		if unicode.IsPrint(c) {
+			continue
+		}
+		fmt.Println("error one of chars is unprintable !")
+		os.Exit(1)
+	}
+}
+
+func Protect(arg1 string, banner *string) {
+	if  banner == nil {
+		fmt.Println("error in args !")
+		os.Exit(1)
+	}
+	CheckUnprintableChars(arg1)
+	if *banner == "shadow.txt" || *banner == "standard.txt" || *banner == "thinkertoy.txt" {
+		*banner = strings.Split(*banner, ".")[0]
+	}
+}
+
+func PrintAscii(str string, amap data) {
 		for j := 0; j < 8; j++ {
 			i := 0
 			for i < len(str){
@@ -23,32 +46,38 @@ func PrintAscii(str string, amap data, f string) {
 		}
 }
 
-func ParseFile(banner string) data {
+func ParseFile(banner string) data{
 	amap := new(data)
 	amap.content = make(map[rune][]string)
 	banner += ".txt"
 	file, err := ioutil.ReadFile(banner)
-	j := 0
-	for i := 32; i < 126; i++ {
-		amap.content[rune(i)] = strings.Split(strings.Split(string(file), "\n\n")[j],"\n")
-		j++
-	}
 	if err != nil {
 		fmt.Println("error reading the banner file !")
-	} 
+		os.Exit(1)
+	}else { 
+		j := 0
+		for i := 32; i < 126; i++ {
+			if banner == "thinkertoy.txt" {
+				amap.content[rune(i)] = strings.Split(strings.Split(string(file), "\r\n\r\n")[j],"\r\n")
+			} else {
+				amap.content[rune(i)] = strings.Split(strings.Split(string(file), "\n\n")[j],"\n")
+			}
+			j++
+		}
+	}
 	return *amap
 }
 func main() {
 	if len(os.Args) == 3 {
 		if (os.Args[1] != "" && os.Args[2] != "") {
+				Protect(os.Args[1], &os.Args[2])
 				amap := ParseFile(os.Args[2])
-		//		fmt.Print(amap.content['f'])
 			if os.Args[2] == "standard" {
-				PrintAscii(os.Args[1], amap, "st")
+				PrintAscii(os.Args[1], amap)
 			} else if os.Args[2] == "shadow" {
-				PrintAscii(os.Args[1], amap, "sh")
+				PrintAscii(os.Args[1], amap)
 			} else if os.Args[2] == "thinkertoy" {
-				PrintAscii(os.Args[1], amap, "th")
+				PrintAscii(os.Args[1], amap)
 			}
 		}
 	}

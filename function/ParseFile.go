@@ -16,7 +16,12 @@ func ParseFile(banner string) data {
 	_, FileName, _, _ := runtime.Caller(0)
 	Path := filepath.Join(filepath.Dir(FileName), "../Banner/", banner)
 	file, err := ioutil.ReadFile(Path)
-	file = file[1 : len(file)-1]
+	if banner == "standard.txt" || banner == "shadow.txt" || banner == "thinkertoy" {
+		file = file[1 : len(file)-1]
+	} else {
+		fmt.Println("error : choose the right banner ! ")
+		os.Exit(1)
+	}
 	CheckFileData(string(file))
 	if err != nil {
 		fmt.Println("Check if ")

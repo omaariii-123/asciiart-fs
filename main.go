@@ -5,7 +5,6 @@ import (
 		"os"
 		"io/ioutil"
 		"strings"
-		"unicode"
 	)
 
 type data struct {
@@ -15,7 +14,7 @@ type data struct {
 
 func CheckUnprintableChars(s string) {
 	for _, c := range s {
-		if unicode.IsPrint(c) {
+		if c >= 32 && c <= 126 {
 			continue
 		}
 		fmt.Println("error one of chars is unprintable !")
@@ -23,14 +22,14 @@ func CheckUnprintableChars(s string) {
 	}
 }
 
-func Protect(arg1 string, banner *string) {
-	if  banner == nil {
-		fmt.Println("error in args !")
-		os.Exit(1)
-	}
+func Protect(arg1 string, banner *string, n int) {
 	CheckUnprintableChars(arg1)
-	if *banner == "shadow.txt" || *banner == "standard.txt" || *banner == "thinkertoy.txt" {
-		*banner = strings.Split(*banner, ".")[0]
+	if n == 1 {
+			return
+	} else {
+		if *banner == "shadow.txt" || *banner == "standard.txt" || *banner == "thinkertoy.txt" {
+			*banner = strings.Split(*banner, ".")[0]
+		}
 	}
 }
 
@@ -67,7 +66,7 @@ func ParseFile(banner string) data{
 	}else { 
       file = []byte(strings.ReplaceAll(string(file), "\r", ""))[1:]
 		j := 0
-		for i := 32; i < 126; i++ {
+		for i := 32; i <= 126; i++ {
 			amap.content[rune(i)] = strings.Split(strings.Split(string(file), "\n\n")[j],"\n")
 			j++
 		}
@@ -77,9 +76,14 @@ func ParseFile(banner string) data{
 func main() {
 	if len(os.Args) == 3 {
 		if (os.Args[1] != "" && os.Args[2] != "") {
-			Protect(os.Args[1], &os.Args[2])
+			Protect(os.Args[1], &os.Args[2], 2)
 			amap := ParseFile(os.Args[2])
 			PrintAscii(os.Args[1], amap)
+		} 	
+	}else if len(os.Args) == 2 {
+				Protect(os.Args[1], nil, 1)
+				amap := ParseFile("standard")
+				PrintAscii(os.Args[1], amap)
 		}
-	}
+
 }
